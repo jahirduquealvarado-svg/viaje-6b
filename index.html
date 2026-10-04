@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Viaje de Confraternidad 2026 - Ruta Talara Tumbes Arenillas</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#f3f6fb;--card:#fff;--ink:#172033;--muted:#667085;--blue:#173b6c;--line:#dce4ef}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:900px;margin:auto;padding:14px}.hero{background:linear-gradient(135deg,#173b6c,#3375ad);color:white;padding:22px;border-radius:22px;box-shadow:0 8px 28px #173b6c30}
+h1{font-size:25px;margin:0 0 5px}.sub{opacity:.93}.route{font-size:17px;font-weight:800;line-height:1.5;margin-top:13px}
+.card{background:var(--card);padding:16px;border-radius:18px;margin-top:14px;box-shadow:0 4px 18px #1e293b10}.card h2{font-size:18px;margin:0 0 12px}
+.statusrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}.status{border:1px solid var(--line);border-radius:14px;padding:13px}.status b{display:block;margin-bottom:5px}.dot{display:inline-block;width:13px;height:13px;border-radius:50%;margin-right:6px;vertical-align:-1px}.greenDot{background:#2fa866}.yellowDot{background:#f4c542}.grayDot{background:#8b95a5}
+.small{font-size:12px;color:var(--muted);line-height:1.45}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.city,.day{border:1px solid var(--line);border-radius:14px;padding:11px}.temp{font-size:25px;font-weight:800;margin:3px 0}.wx,.metric{font-size:13px;color:var(--muted);margin-top:4px}
+.days{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.risk{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;margin-top:7px}.green{background:#e5f7ed;color:#167245}.yellow{background:#fff3cd;color:#8a6500}.red{background:#fde7e9;color:#a82732}.gray{background:#eef2f6;color:#5e6876}
+#map{height:360px;border-radius:15px;overflow:hidden}.notice{border-left:5px solid #f4c542;background:#fff9df;border-radius:10px;padding:12px;font-size:13px;line-height:1.5}
+.btn{display:block;text-decoration:none;text-align:center;border-radius:13px;padding:12px;font-weight:800;margin-top:9px;background:#173b6c;color:#fff}.btn.secondary{background:#eef3f9;color:#173b6c;border:1px solid #d6e0ec}
+button{width:100%;border:0;border-radius:14px;padding:14px;background:#173b6c;color:white;font-weight:800;font-size:15px;margin-top:13px}.footer{text-align:center;color:var(--muted);font-size:11px;line-height:1.5;padding:17px 5px}
+@media(max-width:650px){.statusrow,.grid,.days{grid-template-columns:1fr 1fr}#map{height:310px}}@media(max-width:430px){.statusrow{grid-template-columns:1fr}.grid{grid-template-columns:1fr 1fr}.days{grid-template-columns:1fr 1fr}}
+</style></head>
+<body><div class="wrap">
+<section class="hero"><h1>🚌 Viaje de Confraternidad 2026</h1><div class="sub">6.º B · Colegio Punta Arenas</div><div class="route">🇵🇪 TALARA → TUMBES → ARENILLAS 🇪🇨<br><span style="font-size:14px;font-weight:600">Destino: Hotel Hillary</span></div></section>
+
+<section class="card"><h2>🚦 Estado general del viaje</h2><div class="statusrow">
+<div class="status"><b><span class="dot yellowDot" id="weatherDot"></span><span id="weatherState">Clima: actualizando…</span></b><div class="small">Calculado automáticamente con el pronóstico meteorológico del corredor.</div></div>
+<div class="status"><b><span class="dot grayDot"></span>Carretera: verificar fuente oficial</b><div class="small">No se declara “ruta libre” sin una alerta vial oficial verificable. Usa los botones inferiores antes de salir.</div></div>
+</div></section>
+
+<section class="card"><h2>🗺️ Mapa de la ruta</h2><div id="map"></div><div class="small" style="margin-top:8px">Mapa referencial Talara → Tumbes → frontera → Arenillas. La línea sigue una ruta vial calculada en línea cuando el servicio de rutas está disponible.</div></section>
+
+<section class="card"><h2>🛣️ Estado de carretera y alertas</h2>
+<div class="notice"><b>Control vial:</b> para el tramo peruano Talara–Tumbes, consulta el mapa oficial de SUTRAN, que informa tránsito normal, restringido o interrumpido. Para el tramo ecuatoriano, usa el acceso de consulta vial oficial indicado abajo. Esta página evita asumir que una carretera está libre solo porque el clima sea bueno.</div>
+<a class="btn" href="https://alertasviales.sutran.gob.pe/" target="_blank" rel="noopener">🇵🇪 VER ALERTAS VIALES SUTRAN</a>
+<a class="btn secondary" href="https://www.obraspublicas.gob.ec/" target="_blank" rel="noopener">🇪🇨 CONSULTAR MTOP ECUADOR</a>
+</section>
+
+<section class="card"><h2>🌦️ Clima actual en la ruta</h2><div class="grid" id="current"></div><button onclick="loadWeather()">🔄 ACTUALIZAR CLIMA AHORA</button><div class="small" id="updated" style="text-align:center;margin-top:8px"></div></section>
+
+<section class="card"><h2>📅 Proyección hasta el 15 de octubre</h2><div class="small" style="margin-bottom:10px">Desde el día en que se abre el enlace hasta el 15 de octubre. La evaluación considera Talara, Tumbes y Arenillas y se actualiza al volver a abrir la página.</div><div class="days" id="forecast"></div></section>
+
+<div class="footer">Clima: Open-Meteo · Mapa base: OpenStreetMap · Alertas viales Perú: SUTRAN.<br>Información orientativa para la delegación. Antes de viajar, confirmar las condiciones de vía con las autoridades competentes.</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const places=[{n:"Talara",lat:-4.5772,lon:-81.2719},{n:"Tumbes",lat:-3.5669,lon:-80.4515},{n:"Arenillas",lat:-3.5542,lon:-80.0667}];
+const codes={0:"Despejado",1:"Mayormente despejado",2:"Parcialmente nublado",3:"Nublado",45:"Niebla",48:"Niebla",51:"Llovizna ligera",53:"Llovizna",55:"Llovizna intensa",61:"Lluvia ligera",63:"Lluvia",65:"Lluvia fuerte",80:"Chubascos",81:"Chubascos",82:"Chubascos fuertes",95:"Tormenta",96:"Tormenta con granizo",99:"Tormenta fuerte"};
+function risk(p,mm,c){if(c>=95||mm>=20||p>=80)return["🔴 Alto","red"];if(mm>=5||p>=45)return["🟡 Precaución","yellow"];return["🟢 Bajo","green"]}
+const fmt=d=>new Intl.DateTimeFormat("es-PE",{weekday:"short",day:"numeric",month:"short"}).format(d);
+async function getP(p,days){let u=`https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum&timezone=auto&forecast_days=${days}`;let r=await fetch(u);return await r.json()}
+async function loadWeather(){
+document.getElementById("updated").textContent="Actualizando…";
+let now=new Date(),target=new Date(now.getFullYear(),9,15,23,59,59),diff=Math.max(1,Math.ceil((target-now)/86400000)+1),days=Math.min(16,diff);
+try{
+let all=await Promise.all(places.map(p=>getP(p,days))),cur=document.getElementById("current");cur.innerHTML="";let mp=0,mm=0,mc=0;
+all.forEach((d,i)=>{let p=d.daily.precipitation_probability_max[0]??0,s=d.daily.precipitation_sum[0]??0,c=d.current.weather_code??0;mp=Math.max(mp,p);mm=Math.max(mm,s);mc=Math.max(mc,c);cur.innerHTML+=`<div class="city"><b>📍 ${places[i].n}</b><div class="temp">${Math.round(d.current.temperature_2m)}°C</div><div class="wx">${codes[c]||"Variable"}</div><div class="metric">💧 Lluvia: <b>${p}%</b></div></div>`});
+let rr=risk(mp,mm,mc);document.getElementById("weatherState").textContent="Clima: "+rr[0];document.getElementById("weatherDot").className="dot "+(rr[1]=="red"?"":rr[1]=="yellow"?"yellowDot":"greenDot");if(rr[1]=="red")document.getElementById("weatherDot").style.background="#dc3545";
+let f=document.getElementById("forecast");f.innerHTML="";let n=all[0].daily.time.length;
+for(let j=0;j<n;j++){let dt=new Date(all[0].daily.time[j]+"T12:00:00");if(dt>target)continue;let ps=all.map(x=>x.daily.precipitation_probability_max[j]??0),ss=all.map(x=>x.daily.precipitation_sum[j]??0),cs=all.map(x=>x.daily.weather_code[j]??0),hi=all.map(x=>x.daily.temperature_2m_max[j]),lo=all.map(x=>x.daily.temperature_2m_min[j]);let p=Math.max(...ps),s=Math.max(...ss),c=Math.max(...cs),r=risk(p,s,c);f.innerHTML+=`<div class="day"><b>${fmt(dt)}</b><div class="wx">${codes[c]||"Variable"}</div><div class="metric">🌡️ ${Math.round(Math.min(...lo))}–${Math.round(Math.max(...hi))}°C</div><div class="metric">💧 Máx. lluvia ruta: <b>${p}%</b></div><span class="risk ${r[1]}">${r[0]}</span></div>`}
+document.getElementById("updated").textContent="Última actualización: "+new Date().toLocaleString("es-PE");
+}catch(e){document.getElementById("updated").textContent="No fue posible actualizar. Pulsa nuevamente."}}
+loadWeather();
+
+const map=L.map('map').setView([-4.05,-80.65],8);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
+places.forEach(p=>L.marker([p.lat,p.lon]).addTo(map).bindPopup(`<b>${p.n}</b>`));
+const coords=places.map(p=>`${p.lon},${p.lat}`).join(';');
+fetch(`https://router.project-osrm.org/route/v1/driving/${coords}?overview=full&geometries=geojson`)
+.then(r=>r.json()).then(d=>{if(d.routes&&d.routes[0]){let line=L.geoJSON(d.routes[0].geometry).addTo(map);map.fitBounds(line.getBounds(),{padding:[20,20]})}})
+.catch(()=>{let line=L.polyline(places.map(p=>[p.lat,p.lon])).addTo(map);map.fitBounds(line.getBounds(),{padding:[20,20]})});
+</script></body></html>
